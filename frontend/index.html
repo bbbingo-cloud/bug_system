@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>缺陷管理系统 - 类BugFree</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <i class="bi bi-bug-fill" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h2 class="mt-2">缺陷管理系统</h2>
+                <p class="text-muted">Bug Management System (BugFree)</p>
+                <small class="text-info">FusionCompute + Docker | 鲲鹏 ARM 架构</small>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">用户名</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" id="loginUsername" class="form-control" placeholder="请输入用户名" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="请输入密码" required>
+                    </div>
+                </div>
+                <div class="mb-3 text-muted small">
+                    <i class="bi bi-info-circle"></i> 测试账号：admin / 123456
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> 登 录
+                </button>
+            </form>
+            <div id="loginError" class="alert alert-danger mt-3" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainPage" style="display:none;">
+        <!-- 顶部导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-bug-fill"></i> 缺陷管理系统
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="switchPage('dashboard')">
+                                <i class="bi bi-speedometer2"></i> 仪表盘
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="switchPage('bugs')">
+                                <i class="bi bi-bug"></i> Bug管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="switchPage('projects')">
+                                <i class="bi bi-folder"></i> 项目管理
+                            </a>
+                        </li>
+                        <li class="nav-item" id="userMgmtNav" style="display:none;">
+                            <a class="nav-link" href="#" onclick="switchPage('users')">
+                                <i class="bi bi-people"></i> 用户管理
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="navbar-text me-3 text-light">
+                        <i class="bi bi-person-circle"></i>
+                        <span id="currentUserName"></span>
+                        <span class="badge bg-info ms-1" id="currentUserRole"></span>
+                    </div>
+                    <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                        <i class="bi bi-box-arrow-right"></i> 退出
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 内容区域 -->
+        <div class="container-fluid mt-3">
+            <!-- 仪表盘页面 -->
+            <div id="dashboardPage" class="page-content">
+                <h4><i class="bi bi-speedometer2"></i> 系统概览</h4>
+                <hr>
+                <div class="row" id="statsCards">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h1 class="card-title" id="statTotalBugs">0</h1>
+                                <p class="card-text">Bug总数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h1 class="card-title" id="statTotalProjects">0</h1>
+                                <p class="card-text">项目总数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h1 class="card-title" id="statTotalUsers">0</h1>
+                                <p class="card-text">用户总数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h1 class="card-title" id="statActiveBugs">0</h1>
+                                <p class="card-text">未解决Bug</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card"><div class="card-body">
+                            <h5>Bug状态分布</h5>
+                            <canvas id="statusChart" height="250"></canvas>
+                        </div></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card"><div class="card-body">
+                            <h5>Bug严重程度分布</h5>
+                            <canvas id="severityChart" height="250"></canvas>
+                        </div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bug管理页面 -->
+            <div id="bugsPage" class="page-content" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4><i class="bi bi-bug"></i> Bug列表</h4>
+                    <button class="btn btn-primary" onclick="showBugCreateModal()">
+                        <i class="bi bi-plus-circle"></i> 提交Bug
+                    </button>
+                </div>
+                <hr>
+
+                <!-- 筛选栏 -->
+                <div class="card mb-3"><div class="card-body py-2">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-auto">
+                            <select id="filterProject" class="form-select form-select-sm" onchange="loadBugs()">
+                                <option value="">全部项目</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select id="filterStatus" class="form-select form-select-sm" onchange="loadBugs()">
+                                <option value="">全部状态</option>
+                                <option value="Active">Active - 新建</option>
+                                <option value="Assigned">Assigned - 已指派</option>
+                                <option value="Resolved">Resolved - 已解决</option>
+                                <option value="Verified">Verified - 已验证</option>
+                                <option value="Closed">Closed - 已关闭</option>
+                                <option value="Reopened">Reopened - 重新打开</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select id="filterSeverity" class="form-select form-select-sm" onchange="loadBugs()">
+                                <option value="">全部严重程度</option>
+                                <option value="1-致命">1-致命</option>
+                                <option value="2-严重">2-严重</option>
+                                <option value="3-一般">3-一般</option>
+                                <option value="4-轻微">4-轻微</option>
+                                <option value="5-建议">5-建议</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <input type="text" id="filterKeyword" class="form-control form-control-sm" placeholder="搜索标题/编号..." onkeyup="debounceSearch()">
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="resetBugFilters()">
+                                <i class="bi bi-arrow-repeat"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                </div></div>
+
+                <!-- Bug列表表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Bug编号</th>
+                                <th>标题</th>
+                                <th>项目</th>
+                                <th>严重程度</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>指派人</th>
+                                <th>创建人</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bugsTableBody"></tbody>
+                    </table>
+                </div>
+                <!-- 分页 -->
+                <nav><ul class="pagination justify-content-center" id="bugsPagination"></ul></nav>
+            </div>
+
+            <!-- 项目管理页面 -->
+            <div id="projectsPage" class="page-content" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4><i class="bi bi-folder"></i> 项目列表</h4>
+                    <button class="btn btn-primary" onclick="showProjectCreateModal()">
+                        <i class="bi bi-plus-circle"></i> 创建项目
+                    </button>
+                </div>
+                <hr>
+                <div class="row" id="projectsList"></div>
+            </div>
+
+            <!-- 用户管理页面 -->
+            <div id="usersPage" class="page-content" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4><i class="bi bi-people"></i> 用户列表</h4>
+                    <button class="btn btn-primary" onclick="showUserCreateModal()">
+                        <i class="bi bi-person-plus"></i> 创建用户
+                    </button>
+                </div>
+                <hr>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>姓名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bug创建/编辑弹窗 (Modal) -->
+    <div class="modal fade" id="bugModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bugModalTitle">提交Bug</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bugForm">
+                        <input type="hidden" id="bugId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Bug标题 <span class="text-danger">*</span></label>
+                                <input type="text" id="bugTitle" class="form-control" required maxlength="255" placeholder="请输入Bug简要描述">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">所属项目 <span class="text-danger">*</span></label>
+                                <select id="bugProject" class="form-select" required onchange="loadProjectModules(this.value)">
+                                    <option value="">请选择项目</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">所属模块</label>
+                                <select id="bugModule" class="form-select"><option value="">请选择模块</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">严重程度</label>
+                                <select id="bugSeverity" class="form-select">
+                                    <option value="3-一般">3-一般</option>
+                                    <option value="1-致命">1-致命</option>
+                                    <option value="2-严重">2-严重</option>
+                                    <option value="4-轻微">4-轻微</option>
+                                    <option value="5-建议">5-建议</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">优先级</label>
+                                <select id="bugPriority" class="form-select">
+                                    <option value="3-中">3-中</option>
+                                    <option value="1-紧急">1-紧急</option>
+                                    <option value="2-高">2-高</option>
+                                    <option value="4-低">4-低</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Bug类型</label>
+                                <select id="bugType" class="form-select">
+                                    <option value="功能缺陷">功能缺陷</option>
+                                    <option value="界面问题">界面问题</option>
+                                    <option value="性能问题">性能问题</option>
+                                    <option value="安全问题">安全问题</option>
+                                    <option value="兼容性问题">兼容性问题</option>
+                                    <option value="文档问题">文档问题</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">指派给</label>
+                                <select id="bugAssignedTo" class="form-select"><option value="">暂不指派</option></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">详细描述</label>
+                                <textarea id="bugDescription" class="form-control" rows="3" placeholder="请详细描述Bug现象"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">复现步骤</label>
+                                <textarea id="bugSteps" class="form-control" rows="2" placeholder="请描述复现该Bug的操作步骤"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">环境信息</label>
+                                <input type="text" id="bugEnvironment" class="form-control" placeholder="如：OS/浏览器/版本号等">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBug()">
+                        <i class="bi bi-check-circle"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bug详情弹窗 -->
+    <div class="modal fade" id="bugDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-bug"></i> Bug详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="bugDetailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 状态变更弹窗 -->
+    <div class="modal fade" id="statusChangeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusChangeTitle">状态变更</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statusChangeForm">
+                        <input type="hidden" id="statusChangeBugId">
+                        <input type="hidden" id="statusChangeAction">
+                        <div class="mb-3" id="statusChangeAssignee" style="display:none;">
+                            <label class="form-label">指派给</label>
+                            <select id="statusChangeAssignUser" class="form-select"></select>
+                        </div>
+                        <div class="mb-3" id="statusChangeResolution" style="display:none;">
+                            <label class="form-label">解决方案</label>
+                            <select id="statusChangeResType" class="form-select">
+                                <option value="Fixed">Fixed - 已修复</option>
+                                <option value="Duplicated">Duplicated - 重复</option>
+                                <option value="NotABug">NotABug - 不是Bug</option>
+                                <option value="WontFix">WontFix - 不予修复</option>
+                                <option value="Later">Later - 延期处理</option>
+                                <option value="WorksForMe">WorksForMe - 无法复现</option>
+                                <option value="External">External - 外部原因</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            <textarea id="statusChangeComment" class="form-control" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmStatusChange()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 项目创建/编辑弹窗 -->
+    <div class="modal fade" id="projectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectModalTitle">创建项目</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="projectForm">
+                        <input type="hidden" id="projectId">
+                        <div class="mb-3">
+                            <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                            <input type="text" id="projectName" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">项目编码 <span class="text-danger">*</span></label>
+                            <input type="text" id="projectCode" class="form-control" required placeholder="如：PROJ-001">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">项目经理</label>
+                            <select id="projectManager" class="form-select"><option value="">请选择</option></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">项目描述</label>
+                            <textarea id="projectDesc" class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProject()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户创建/编辑弹窗 -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">创建用户</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userId">
+                        <div class="mb-3">
+                            <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                            <input type="text" id="userUsername" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">密码 <span id="userPwdHint" class="text-muted small">(*)</span></label>
+                            <input type="password" id="userPassword" class="form-control" placeholder="默认：123456">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">真实姓名</label>
+                            <input type="text" id="userRealName" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">邮箱</label>
+                            <input type="email" id="userEmail" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">角色 <span class="text-danger">*</span></label>
+                            <select id="userRole" class="form-select" required></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+    <!-- 自定义JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+# ============================================
+# 缺陷管理系统 - Docker Compose 编排文件
+# 多容器编排：MySQL + Flask Web 应用
+# 适配鲲鹏 ARM 架构 (FusionCompute 虚拟机)
+# ============================================
+
+version: '3.8'
+
+services:
+  # ----------------------------
+  # MySQL 数据库服务
+  # ----------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: bug-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPass@2024
+      MYSQL_DATABASE: bug_manager
+      MYSQL_USER: buguser
+      MYSQL_PASSWORD: BugManager@2024
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      # 数据持久化：挂载到宿主机目录
+      - mysql-data:/var/lib/mysql
+      # 初始化脚本：首次启动时自动建表
+      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    networks:
+      - bug-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pRootPass@2024"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  # ----------------------------
+  # Flask Web 应用服务
+  # ----------------------------
+  web:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    image: bug-management-system:latest
+    container_name: bug-web
+    restart: always
+    environment:
+      FLASK_DEBUG: "False"
+      SECRET_KEY: "bug-manager-secret-kunpeng-2024"
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: buguser
+      DB_PASSWORD: "BugManager@2024"
+      DB_NAME: bug_manager
+      TZ: Asia/Shanghai
+    ports:
+      - "5000:5000"
+    volumes:
+      # 上传文件持久化
+      - uploads-data:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - bug-network
+
+# ----------------------------
+# 数据卷定义
+# ----------------------------
+volumes:
+  mysql-data:
+    driver: local
+    name: bug-mysql-data
+  uploads-data:
+    driver: local
+    name: bug-uploads-data
+
+# ----------------------------
+# 网络定义
+# ----------------------------
+networks:
+  bug-network:
+    driver: bridge
+    name: bug-network

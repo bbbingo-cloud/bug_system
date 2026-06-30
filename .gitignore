@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+*.db
+
+# Claude
+.claude/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp files
+~$*.docx
+~$*.pptx

@@ -1,0 +1,183 @@
+/* ============================================
+   缺陷管理系统 - 自定义样式
+   Bug Management System (BugFree-Like)
+   FusionCompute + Docker | 鲲鹏 ARM 架构
+   ============================================ */
+
+/* 通用样式 */
+body {
+    background-color: #f5f8fa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+.page-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 登录页 */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 50%, #084298 100%);
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-card h2 {
+    font-weight: 600;
+    color: #333;
+}
+
+/* 导航栏 */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar .navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* 卡片 */
+.card {
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border-radius: 8px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* 表格 */
+.table th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Bug状态标签 */
+.badge-status {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+}
+
+.badge-Active { background-color: #0d6efd; }
+.badge-Assigned { background-color: #6f42c1; }
+.badge-Resolved { background-color: #198754; }
+.badge-Verified { background-color: #20c997; }
+.badge-Closed { background-color: #6c757d; }
+.badge-Reopened { background-color: #fd7e14; }
+
+/* Bug严重程度标签 */
+.badge-severity-1-致命 { background-color: #dc3545; color: white; }
+.badge-severity-2-严重 { background-color: #fd7e14; color: white; }
+.badge-severity-3-一般 { background-color: #ffc107; color: #333; }
+.badge-severity-4-轻微 { background-color: #0dcaf0; color: #333; }
+.badge-severity-5-建议 { background-color: #6c757d; color: white; }
+
+/* Bug优先级标签 */
+.badge-priority-1-紧急 { background-color: #dc3545; }
+.badge-priority-2-高 { background-color: #fd7e14; }
+.badge-priority-3-中 { background-color: #0d6efd; }
+.badge-priority-4-低 { background-color: #6c757d; }
+
+/* 分页 */
+.pagination {
+    margin-top: 1rem;
+}
+
+/* 操作日志 */
+.log-timeline {
+    border-left: 3px solid #dee2e6;
+    padding-left: 20px;
+}
+
+.log-item {
+    position: relative;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.log-item::before {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 12px;
+    width: 10px;
+    height: 10px;
+    background: #0d6efd;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* 仪表盘统计卡片 */
+#statsCards .card {
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+#statsCards .card:hover {
+    transform: translateY(-2px);
+}
+
+#statsCards .card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 20px;
+        margin: 15px;
+    }
+
+    #statsCards .card-title {
+        font-size: 1.8rem;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+}
+
+/* Loading 加载 */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 筛选栏 */
+#bugsPage .card .form-select-sm,
+#bugsPage .card .form-control-sm {
+    min-width: 140px;
+}
